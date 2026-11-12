@@ -4,7 +4,7 @@
 落 PG，**金额只在 cost 算一次**。
 
 设计依据：[`../wist-cost-设计要点.md`](../wist-cost-设计要点.md)（权威）；输入契约：
-[`../contracts/harvest-cost-v1/`](../contracts/harvest-cost-v1/README.md)（只读，不在本仓修改）。
+[`contracts/harvest-cost-v1/`](contracts/harvest-cost-v1/README.md)（**与消费方同仓**，改造契约先改这里）。
 
 ```
 wist-harvest ──分片 + manifest──► wist-cost ──有效范围快照──► (W1) 匹配 / 日汇总 / 对账
@@ -34,6 +34,7 @@ wist-cost/
 ├── migrations/
 │   ├── 0001_cost_schema.sql       # 表 + 唯一索引 + 月分区 + 元信息
 │   └── 0002_cost_partitions.sql   # 建分区 / 18 个月保留期清理函数
+├── contracts/harvest-cost-v1/     # 输入契约（两个 schema + 样例）；权威定义就在这
 └── crates/
     ├── cost-core/                 # 领域层：金额、范围身份、契约解析、批次校验、对象存储 trait
     ├── cost-store/                # 存储层：PG 访问、迁移、入账编排、local/s3 后端
@@ -131,7 +132,7 @@ WIST_COST_TEST_DATABASE_URL=postgres://postgres:adminpw@127.0.0.1:55999/wist_cos
 - **逻辑层**（`cost-core`，47 个）：金额解析/求和/落库边界（`null` vs `"0"` vs 负数）、
   七元组身份、契约解析（忽略未知字段）、sha256 / 行数 / 空行 / 组件金额一致性。
 - **PG 入账**（`crates/cost-store/tests/ingest_pg.rs`，9 个，标了 `#[ignore]`）：
-  直接读 `../contracts/harvest-cost-v1/fixtures/` 的 `manifest-sample.json` 与
+  直接读 `contracts/harvest-cost-v1/fixtures/` 的 `manifest-sample.json` 与
   `detail-sample.ndjson`（**不自造样例**；分片按真实对象键放到临时目录，sha256 校验保证
   字节就是契约那份）。覆盖：一次入账、同 manifest 重放两次、同范围新批次替换、sha256 不符、
   行数不符、七元组任一字段不同、空范围、分区/保留期函数、`numeric(30,12)` 列型。

@@ -22,7 +22,7 @@ pub mod verify;
 
 pub use detail::{Amounts, DetailLine, DetailViolation};
 pub use error::CostError;
-pub use manifest::{Manifest, PeriodSource, Shard};
+pub use manifest::{DETAIL_SCHEMA, MANIFEST_SCHEMA, Manifest, PeriodSource, Shard};
 pub use money::Money;
 pub use objects::{ObjectBackend, ObjectStore, ShardKeyLayout};
 pub use range::{CostBasis, CostRange, Vendor};

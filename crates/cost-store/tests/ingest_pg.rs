@@ -86,7 +86,7 @@ fn fixtures_dir() -> PathBuf {
         return PathBuf::from(dir);
     }
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../contracts/harvest-cost-v1/fixtures")
+        .join("../../contracts/harvest-cost-v1/fixtures")
         .canonicalize()
         .expect("找不到 contracts/harvest-cost-v1/fixtures")
 }

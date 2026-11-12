@@ -1,0 +1,26 @@
+{
+  "schema": "wist.harvest.cost.manifest.v1",
+  "batch_id": "tencent-cloud-prod:cost-20261112T003000Z",
+  "range": {
+    "tenant": "tenant-example",
+    "source_code": "tencent-cloud-prod",
+    "vendor": "TENCENT_CLOUD",
+    "billing_account_uin": "100000000001",
+    "cost_basis": "CONSUMPTION",
+    "period_start": "2026-11-10",
+    "period_end": "2026-11-10"
+  },
+  "currency": "CNY",
+  "period_source": "cloud_api",
+  "fetched_at": "2026-11-12T00:31:22+08:00",
+  "request_ids": ["req-example-0001", "req-example-0002"],
+  "shards": [
+    {
+      "id": "0001",
+      "rows": 3,
+      "sha256": "dc837de9f371a2724c1f9611e446660ea3d20c11fca1d908f5fcca6301b8870a",
+      "bytes": 3470
+    }
+  ],
+  "total_rows": 3
+}
