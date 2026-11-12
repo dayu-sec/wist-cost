@@ -21,7 +21,7 @@
     "cost_date": {
       "type": "string",
       "format": "date",
-      "description": "CONSUMPTION 取查询日；CHARGE 取北京时间 PayTime 的日期"
+      "description": "CONSUMPTION 取查询日；CHARGE 取账单归属日（云侧 BillDay）。不能用付款时刻 PayTime：月底结算会跨零点，按付款时刻归日会把 10 月账单推到 11 月"
     },
     "bill_month": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}$" },
 

@@ -27,8 +27,15 @@
 (tenant, source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
 ```
 
-- `cost_basis = CONSUMPTION` → `period_start == period_end`，单日；
-- `cost_basis = CHARGE` → 整月，`period_start` 为该月首日，`period_end` 为该月末日。
+- `cost_basis = CONSUMPTION` → `period_start == period_end`，单日；`cost_date` 取查询日；
+- `cost_basis = CHARGE` → 整月，`period_start` 为该月首日，`period_end` 为该月末日；
+  `cost_date` 取**账单归属日**（云侧 `BillDay`）。
+
+> **归日不用 `PayTime`。** 月底结算会跨零点：实测有一批 `BillDay=10-31` 的行
+> `PayTime=11-01 00:05`。按付款时刻归日会把这些行推到 11 月，而 11 月的查询并不
+> 包含它们 —— 两边的钱对不上，范围校验（`cost_date` 必须落在 `period` 内）也会整批拒收。
+> `pay_time` 仍是事实，作为普通属性保留在明细行里。
+> （v1 尚未投产，此处是对原表述的澄清，不改形状、不升版本。）
 
 同一七元组重复发布 = **替换**，不是累加。
 
