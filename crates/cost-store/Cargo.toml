@@ -1,0 +1,23 @@
+[package]
+name = "cost-store"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+description = "wist-cost 存储层：PG schema/迁移、范围替换入账、对象存储后端"
+
+[dependencies]
+cost-core.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["fs"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+hex.workspace = true
+sha2.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync"] }
