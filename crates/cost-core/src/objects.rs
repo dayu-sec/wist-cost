@@ -4,8 +4,8 @@
 //! 没有"内存"档作为部署选项；读正文走代理读 / `:presign`（仅 s3）。
 //!
 //! 对象键沿用设计 §4 的布局：
-//! `cost/{tenant}/{vendor}/{cost_basis}/{yyyy}/{mm}/{shard_id}.ndjson`
-//! （manifest 里没有 `cust_id`，W0 用 `tenant`；harvest 生产侧后缀是 `.ndjson.zst`，
+//! `cost/{vendor}/{cost_basis}/{yyyy}/{mm}/{shard_id}.ndjson`
+//! （客户由 `billing_account_uin` → 客户清单映射，与资产侧同一份关系；harvest 生产侧后缀是 `.ndjson.zst`，
 //! zstd 解压在 W1 补——本层只负责"给我 key 就还我字节"）。
 
 use std::collections::HashMap;
@@ -68,8 +68,7 @@ pub struct ShardKeyLayout {
 
 impl ShardKeyLayout {
     /// 设计 §4 的布局（W0 用 `.ndjson`，zstd 后缀在 W1 接）。
-    pub const DESIGN_TEMPLATE: &str =
-        "cost/{tenant}/{vendor}/{cost_basis}/{year}/{month}/{shard_id}.ndjson";
+    pub const DESIGN_TEMPLATE: &str = "cost/{vendor}/{cost_basis}/{year}/{month}/{shard_id}.ndjson";
 
     pub fn design_default() -> Self {
         Self {
@@ -97,14 +96,13 @@ impl ShardKeyLayout {
 
     /// 按 manifest 与分片 id 展开对象键。
     ///
-    /// 可用占位符：`{tenant}` `{source_code}` `{vendor}` `{cost_basis}` `{year}`
+    /// 可用占位符：`{source_code}` `{vendor}` `{cost_basis}` `{year}`
     /// `{month}` `{batch_id}` `{shard_id}`。
     pub fn key_for(&self, manifest: &Manifest, shard_id: &str) -> String {
         let range = &manifest.range;
         let year = range.period_start.format("%Y").to_string();
         let month = range.period_start.format("%m").to_string();
         self.template
-            .replace("{tenant}", &range.tenant)
             .replace("{source_code}", &range.source_code)
             .replace("{vendor}", range.vendor.as_str())
             .replace("{cost_basis}", range.cost_basis.as_str())
@@ -176,7 +174,6 @@ mod tests {
             schema: crate::manifest::MANIFEST_SCHEMA.to_string(),
             batch_id: "tencent-cloud-prod:cost-20261112T003000Z".to_string(),
             range: CostRange {
-                tenant: "tenant-example".to_string(),
                 source_code: "tencent-cloud-prod".to_string(),
                 vendor: Vendor::TencentCloud,
                 billing_account_uin: "100000000001".to_string(),
@@ -198,7 +195,7 @@ mod tests {
         let layout = ShardKeyLayout::design_default();
         assert_eq!(
             layout.key_for(&manifest(), "0001"),
-            "cost/tenant-example/TENCENT_CLOUD/CONSUMPTION/2026/11/0001.ndjson"
+            "cost/TENCENT_CLOUD/CONSUMPTION/2026/11/0001.ndjson"
         );
     }
 

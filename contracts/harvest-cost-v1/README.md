@@ -21,10 +21,10 @@
 
 ## 3. 范围身份
 
-`range` 的七元组唯一确定一个范围：
+`range` 的六元组唯一确定一个范围（**不含客户**：客户由 `billing_account_uin` 映射）：
 
 ```
-(tenant, source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
+(source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
 ```
 
 - `cost_basis = CONSUMPTION` → `period_start == period_end`，单日；`cost_date` 取查询日；

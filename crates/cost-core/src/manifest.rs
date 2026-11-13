@@ -209,7 +209,6 @@ mod tests {
             "schema": MANIFEST_SCHEMA,
             "batch_id": "tencent-cloud-prod:cost-20261112T003000Z",
             "range": {
-                "tenant": "tenant-example",
                 "source_code": "tencent-cloud-prod",
                 "vendor": "TENCENT_CLOUD",
                 "billing_account_uin": "100000000001",

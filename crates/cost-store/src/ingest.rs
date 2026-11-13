@@ -3,7 +3,7 @@
 //! 设计 §3 的语义：
 //!
 //! ```text
-//! 键   = (tenant, source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
+//! 键   = (source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
 //! 语义 = 同一范围重复发布 → 整段替换（不是累加）
 //! 实现 = staging 写入 → 校验 → 原子切换有效版本 → 旧版本保留可回滚
 //! ```
@@ -164,8 +164,7 @@ impl<'a> Ingestor<'a> {
 fn describe_range(manifest: &Manifest) -> String {
     let range = &manifest.range;
     format!(
-        "{}/{}/{}/{}/{}",
-        range.tenant,
+        "{}/{}/{}/{}",
         range.source_code,
         range.billing_account_uin,
         range.cost_basis.as_str(),
@@ -178,15 +177,14 @@ async fn upsert_range(conn: &mut PgConnection, manifest: &Manifest) -> Result<i6
     let range = &manifest.range;
     sqlx::query(
         "insert into cost_range (
-             tenant, source_code, vendor, billing_account_uin,
+             source_code, vendor, billing_account_uin,
              cost_basis, period_start, period_end, currency
-         ) values ($1, $2, $3, $4, $5, $6, $7, $8)
+         ) values ($1, $2, $3, $4, $5, $6, $7)
          on conflict (
-             tenant, source_code, vendor, billing_account_uin,
+             source_code, vendor, billing_account_uin,
              cost_basis, period_start, period_end
          ) do nothing",
     )
-    .bind(&range.tenant)
     .bind(&range.source_code)
     .bind(range.vendor.as_str())
     .bind(&range.billing_account_uin)
@@ -199,11 +197,10 @@ async fn upsert_range(conn: &mut PgConnection, manifest: &Manifest) -> Result<i6
 
     let row: (i64, String) = sqlx::query_as(
         "select id, currency from cost_range
-         where tenant = $1 and source_code = $2 and vendor = $3
-           and billing_account_uin = $4 and cost_basis = $5
-           and period_start = $6 and period_end = $7",
+         where source_code = $1 and vendor = $2
+           and billing_account_uin = $3 and cost_basis = $4
+           and period_start = $5 and period_end = $6",
     )
-    .bind(&range.tenant)
     .bind(&range.source_code)
     .bind(range.vendor.as_str())
     .bind(&range.billing_account_uin)

@@ -341,7 +341,7 @@ async fn new_batch_for_same_range_supersedes_the_old_version() {
     );
     assert_eq!(
         harness
-            .scalar_i64("select count(*) from cost_range where tenant = 'tenant-example'")
+            .scalar_i64("select count(*) from cost_range where source_code = 'tencent-cloud-prod'")
             .await,
         1,
         "七元组相同 → 还是同一个范围"

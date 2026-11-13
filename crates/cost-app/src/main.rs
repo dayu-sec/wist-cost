@@ -136,8 +136,7 @@ async fn ingest(
             "dry_run": true,
             "batch_id": manifest.batch_id,
             "range": format!(
-                "{}/{}/{}/{}",
-                manifest.range.tenant,
+                "{}/{}/{}",
                 manifest.range.source_code,
                 manifest.range.billing_account_uin,
                 manifest.range.period_label()

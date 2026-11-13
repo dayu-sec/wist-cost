@@ -4,15 +4,15 @@
 --
 -- 三条硬约束：
 --   1. 金额一律 numeric(30,12)，**不用浮点**；NULL = 未知，0 = 确认为零，退款为负。
---   2. 范围身份是七元组，唯一；同一七元组重复发布 = 整段替换，不是累加。
+--   2. 范围身份是六元组，唯一；同一六元组重复发布 = 整段替换，不是累加。
+--      **不含客户**：客户由 billing_account_uin 映射（与资产侧同一份账号归属）。
 --   3. cost_detail 按 bill_month 分区，保留 18 个月（清理用 drop table 分区，
 --      PG 没有 DROP PARTITION DDL），见 0002。
 
 -- ── 范围身份 ────────────────────────────────────────────────────────────────
--- 七元组任一字段不同就是另一个范围；同一个七元组只有一行。
+-- 六元组任一字段不同就是另一个范围；同一个六元组只有一行。
 create table if not exists cost_range (
   id                  bigserial primary key,
-  tenant              text not null,
   source_code         text not null,
   vendor              text not null,
   billing_account_uin text not null,
@@ -25,13 +25,13 @@ create table if not exists cost_range (
   constraint cost_range_basis_chk check (cost_basis in ('CONSUMPTION', 'CHARGE')),
   constraint cost_range_period_chk check (period_end >= period_start),
   constraint cost_range_identity_uniq unique (
-    tenant, source_code, vendor, billing_account_uin,
+    source_code, vendor, billing_account_uin,
     cost_basis, period_start, period_end
   )
 );
 
 comment on table cost_range is
-  '成本范围身份（七元组）。唯一键即幂等键：同一七元组重复发布是替换。';
+  '成本范围身份（六元组，不含客户）。唯一键即幂等键：同一六元组重复发布是替换。';
 
 -- ── 范围版本 ────────────────────────────────────────────────────────────────
 -- 一次"发布该范围"= 一行。有效版本永远只有一个：

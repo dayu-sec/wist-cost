@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 — 2026-11-13
+
+**成本不再带客户：范围身份从七元组降到六元组。**
+
+harvest 0.2.0 起采集器不认识客户（一个网关只服务一个客户，身份由数据通道打标），成本产物
+也就没有 `tenant`。客户归属下沉到本服务：用 `billing_account_uin` 映射客户清单
+（与资产侧同一份「云账号 ⊂ 客户」关系）。
+
+### 不兼容
+
+- 契约 `harvest-cost-v1`：`range` 去掉 `tenant`（不再必填）；`additionalProperties: false`
+  下**旧 manifest 里的 `tenant` 会被拒** —— 必须与 `wist-harvest 0.2.0` 一起升。
+- 对象键：`cost/{tenant}/{vendor}/…` → `cost/{vendor}/…`；
+  `WIST_COST_OBJECT_KEY_TEMPLATE` 的 `{tenant}` 占位符删掉（配了也不会生效）。
+- PG：`cost_range` 删掉 `tenant` 列，唯一键改为六元组。W0 未发布过，重建库即可
+  （`wist-cost migrate` 到新库）。
+- `ingest --dry-run` 输出的 `range` 少一段。
+
 ## 0.1.0 — 2026-11-12
 
 W0 骨架：契约驱动的成本入账跑通。

@@ -258,7 +258,6 @@ mod tests {
             schema: MANIFEST_SCHEMA.to_string(),
             batch_id: "b1".to_string(),
             range: CostRange {
-                tenant: "tenant-example".to_string(),
                 source_code: "tencent-cloud-prod".to_string(),
                 vendor: Vendor::TencentCloud,
                 billing_account_uin: "100000000001".to_string(),

@@ -44,8 +44,8 @@ wist-cost/
 ## 数据模型
 
 ```
-cost_range          七元组身份，唯一键就是幂等键
-  unique (tenant, source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
+cost_range          六元组身份，唯一键就是幂等键（不含客户）
+  unique (source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
 
 cost_range_version  一次发布 = 一行；state: staging → published → superseded
   unique (range_id) where state = 'published'      ← 结构上只可能有一个有效版本
@@ -96,7 +96,7 @@ cost_detail         标准化明细，按 bill_month 分区（RANGE），保留 
 export WIST_COST_DATABASE_URL='postgres://user:pass@host:5432/wist_cost'
 export WIST_COST_OBJECT_KIND=local          # local | s3（s3 在 W0 未实现）
 export WIST_COST_OBJECT_ROOT=/var/lib/wist/cost
-export WIST_COST_OBJECT_KEY_TEMPLATE='cost/{tenant}/{vendor}/{cost_basis}/{year}/{month}/{shard_id}.ndjson'
+export WIST_COST_OBJECT_KEY_TEMPLATE='cost/{vendor}/{cost_basis}/{year}/{month}/{shard_id}.ndjson'
 
 wist-cost migrate
 wist-cost ingest --manifest /path/to/manifest.json            # 入账
@@ -104,7 +104,7 @@ wist-cost ingest --manifest /path/to/manifest.json --dry-run   # 只校验，不
 wist-cost healthz                                             # 自述（等价 HTTP /healthz）
 ```
 
-对象键模板默认就是设计 §4 的布局（占位符：`{tenant}` `{source_code}` `{vendor}`
+对象键模板默认就是设计 §4 的布局（占位符：`{source_code}` `{vendor}`
 `{cost_basis}` `{year}` `{month}` `{batch_id}` `{shard_id}`）。模板必须含 `{shard_id}`。
 
 `healthz` 输出（`status != ok` 时退出码 1）：
@@ -151,7 +151,7 @@ WIST_COST_TEST_DATABASE_URL=postgres://postgres:adminpw@127.0.0.1:55999/wist_cos
 | 回滚 | 旧版本保留在库里，`superseded_by` 指回去；W0 不做 `rollback` 子命令 | 人工 SQL 切换即可；自动化留 W1 |
 | 分区 | PG 没有 `DROP PARTITION`，用 `drop table` 子表实现整块清理 | 与设计意图等价 |
 | 时间字段 | `pay_time` / `fee_*_time` 存原文 `text`，不猜时区 | 交接文档要求按 Asia/Shanghai 解释；解释口径在 W1 定，先不丢原文 |
-| 对象键 | `{cust_id}` 用 `tenant`；W0 后缀 `.ndjson`（无 zstd） | manifest 里没有 `cust_id`；zstd 解压 W1 补 |
+| 对象键 | 不含客户；W0 后缀 `.ndjson`（无 zstd） | 客户由 `billing_account_uin` 映射；zstd 解压 W1 补 |
 | `objects.kind` | 用 `local`（设计口径），`wist-evidence` 用的是 `file` | 跟本设计文档走；共享 crate 抽取时再统一 |
 | s3 | 只有 `ObjectStoreConfig::S3` + `S3ObjectStore` 占位（`get` 明确报未实现） | 先把配置位和自述形状定下来，别让"未实现"退化成空读取 |
 | 空范围 | `shards: []` + `total_rows: 0` 可以发布，成为一个 0 行的有效版本 | 与"请求失败"区分开（交接文档 §8.1） |

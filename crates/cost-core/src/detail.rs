@@ -373,7 +373,6 @@ mod tests {
 
     fn range() -> CostRange {
         CostRange {
-            tenant: "tenant-example".to_string(),
             source_code: "tencent-cloud-prod".to_string(),
             vendor: Vendor::TencentCloud,
             billing_account_uin: "100000000001".to_string(),

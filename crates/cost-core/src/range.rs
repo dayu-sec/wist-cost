@@ -1,12 +1,12 @@
-//! 范围身份：七元组。
+//! 范围身份：六元组。
 //!
 //! 契约 `harvest-cost-v1/README.md` §3：
 //!
 //! ```text
-//! (tenant, source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
+//! (source_code, vendor, billing_account_uin, cost_basis, period_start, period_end)
 //! ```
 //!
-//! 同一七元组重复发布 = **替换**，不是累加。七元组任一字段不同就是另一个范围，互不覆盖。
+//! 同一六元组重复发布 = **替换**，不是累加。七元组任一字段不同就是另一个范围，互不覆盖。
 
 use chrono::{Datelike, NaiveDate};
 use serde::{Deserialize, Serialize};
@@ -51,7 +51,6 @@ impl CostBasis {
 /// 一个成本范围的**身份**（不含金额）。
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CostRange {
-    pub tenant: String,
     pub source_code: String,
     pub vendor: Vendor,
     pub billing_account_uin: String,
@@ -64,7 +63,6 @@ impl CostRange {
     /// 契约 §3 的一致性约束。
     pub fn validate(&self) -> Result<(), CostError> {
         let fields = [
-            ("tenant", self.tenant.as_str()),
             ("source_code", self.source_code.as_str()),
             ("billing_account_uin", self.billing_account_uin.as_str()),
         ];
@@ -107,10 +105,9 @@ impl CostRange {
         Ok(())
     }
 
-    /// 七元组的稳定字符串：并发入账时的 advisory lock 键与日志标识。
+    /// 六元组的稳定字符串：并发入账时的 advisory lock 键与日志标识。
     pub fn identity_key(&self) -> String {
         [
-            self.tenant.as_str(),
             self.source_code.as_str(),
             self.vendor.as_str(),
             self.billing_account_uin.as_str(),
@@ -154,7 +151,6 @@ mod tests {
 
     fn range(basis: CostBasis, start: &str, end: &str) -> CostRange {
         CostRange {
-            tenant: "tenant-example".to_string(),
             source_code: "tencent-cloud-prod".to_string(),
             vendor: Vendor::TencentCloud,
             billing_account_uin: "100000000001".to_string(),
